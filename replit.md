@@ -263,4 +263,24 @@ O sistema possui dois consultores criados automaticamente:
 06 de Novembro de 2025
 
 ## Última Atualização
-06 de Novembro de 2025 - Implementadas melhorias: upload Excel de empresas, checklist enriquecido de prospecção, criação de consultores (Gabriel e Lucas), e interface de atribuição de empresas
+06 de Novembro de 2025 - Melhorias implementadas:
+
+### Manhã (importação inicial)
+- Upload Excel de empresas
+- Checklist enriquecido de prospecção
+- Criação de consultores (Gabriel e Lucas)
+- Interface de atribuição de empresas
+
+### Tarde (melhorias de UX e CRUD completo)
+- ✅ **Edição completa de usuários**: Implementado CRUD completo para usuários (nome, email, senha, tipo)
+  - Novo schema `UsuarioAtualizar` com campos opcionais
+  - Senha opcional na edição (mantém a anterior se não informada)
+  - Interface com modal de edição
+- ✅ **Remoção de emojis**: Removidos todos os emojis da interface
+  - Checklist de interesses do cliente removido
+  - Emojis removidos de selects (Resultado, Potencial, Status)
+  - Emojis removidos de resultados de upload
+- ✅ **Melhorias de scroll**: Formulários agora têm scroll adequado
+  - Modais com `max-height: 90vh` e `overflow-y-auto`
+  - Melhor experiência em telas menores
+- ✅ **Formato CRUD completo**: Todas as entidades agora suportam edição completa
