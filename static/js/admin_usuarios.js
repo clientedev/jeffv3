@@ -10,6 +10,21 @@ function hideAddUserModal() {
     document.getElementById('addUserError').classList.add('hidden');
 }
 
+function showEditUserModal(id, nome, email, tipo) {
+    document.getElementById('edit_usuario_id').value = id;
+    document.getElementById('edit_nome').value = nome;
+    document.getElementById('edit_email').value = email;
+    document.getElementById('edit_tipo').value = tipo;
+    document.getElementById('edit_senha').value = '';
+    document.getElementById('editUserModal').classList.remove('hidden');
+}
+
+function hideEditUserModal() {
+    document.getElementById('editUserModal').classList.add('hidden');
+    document.getElementById('editUserForm').reset();
+    document.getElementById('editUserError').classList.add('hidden');
+}
+
 function showError(elementId, message) {
     const errorDiv = document.getElementById(elementId);
     errorDiv.textContent = message;
@@ -65,9 +80,9 @@ async function carregarUsuarios() {
                 </td>
                 <td class="p-4">
                     <div class="flex space-x-2">
-                        <button onclick="alterarTipo(${usuario.id}, '${usuario.tipo === 'admin' ? 'consultor' : 'admin'}')" 
-                            class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition">
-                            ${usuario.tipo === 'admin' ? 'Tornar Consultor' : 'Tornar Admin'}
+                        <button onclick='showEditUserModal(${usuario.id}, "${usuario.nome.replace(/"/g, '&quot;')}", "${usuario.email}", "${usuario.tipo}")' 
+                            class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition">
+                            Editar
                         </button>
                         <button onclick="deletarUsuario(${usuario.id})" 
                             class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition">
@@ -181,6 +196,47 @@ function logout() {
     localStorage.removeItem('usuario');
     window.location.href = '/';
 }
+
+document.getElementById('editUserForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideError('editUserError');
+
+    const usuarioId = document.getElementById('edit_usuario_id').value;
+    const nome = document.getElementById('edit_nome').value;
+    const email = document.getElementById('edit_email').value;
+    const senha = document.getElementById('edit_senha').value;
+    const tipo = document.getElementById('edit_tipo').value;
+
+    try {
+        const token = localStorage.getItem('token');
+        const body = { nome, email, tipo };
+        if (senha) {
+            body.senha = senha;
+        }
+
+        const response = await fetch(`${API_URL}/admin/usuarios/${usuarioId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Erro ao atualizar usuário');
+        }
+
+        hideEditUserModal();
+        await carregarUsuarios();
+        alert('Usuário atualizado com sucesso!');
+
+    } catch (error) {
+        console.error('Erro:', error);
+        showError('editUserError', error.message);
+    }
+});
 
 window.addEventListener('DOMContentLoaded', () => {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');

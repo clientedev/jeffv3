@@ -9,6 +9,12 @@ class UsuarioBase(BaseModel):
 class UsuarioCriar(UsuarioBase):
     senha: str
 
+class UsuarioAtualizar(BaseModel):
+    nome: Optional[str] = None
+    email: Optional[EmailStr] = None
+    senha: Optional[str] = None
+    tipo: Optional[str] = None
+
 class UsuarioResposta(UsuarioBase):
     id: int
 

@@ -142,9 +142,9 @@ document.getElementById('uploadExcelForm').addEventListener('submit', async (e) 
         resultDiv.innerHTML = `
             <p class="font-semibold mb-2">${result.message}</p>
             <ul class="text-sm space-y-1">
-                <li>✅ Empresas criadas: ${result.empresas_criadas}</li>
-                <li>⏭️ Empresas ignoradas (já existentes): ${result.empresas_ignoradas}</li>
-                <li>📊 Total processado: ${result.total_processadas}</li>
+                <li>Empresas criadas: ${result.empresas_criadas}</li>
+                <li>Empresas ignoradas (já existentes): ${result.empresas_ignoradas}</li>
+                <li>Total processado: ${result.total_processadas}</li>
             </ul>
         `;
         resultDiv.classList.remove('hidden');
