@@ -284,3 +284,15 @@ O sistema possui dois consultores criados automaticamente:
   - Modais com `max-height: 90vh` e `overflow-y-auto`
   - Melhor experiência em telas menores
 - ✅ **Formato CRUD completo**: Todas as entidades agora suportam edição completa
+
+### Noite (correções críticas)
+- ✅ **Correção de carregamento de empresas**: Resolvido problema de 307 redirect
+  - Todas as URLs de API agora incluem barra final (trailing slash)
+  - Empresas, prospecções, agendamentos e alertas carregam corretamente
+  - Fix aplicado em: dashboard.js, empresas.js, alertas.js, prospeccao_nova.js
+- ✅ **Substituição do campo de agendamento**: Mudança de "dias para próxima ligação" para "data da próxima ligação"
+  - Campo de data com seletor de calendário
+  - Data padrão de hoje+7 dias quando checkbox é marcado
+  - Validação apenas quando agendamento está habilitado
+  - Reset adequado do formulário entre usos
+  - Backend retorna boolean correto para agendamento_criado
