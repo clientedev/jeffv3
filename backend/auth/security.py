@@ -8,8 +8,15 @@ from sqlalchemy.orm import Session
 from backend.database import get_db
 from backend.models import Usuario
 import os
+import sys
 
-SECRET_KEY = os.getenv("SESSION_SECRET", "sua-chave-secreta-super-segura-mude-isso")
+SECRET_KEY = os.getenv("SESSION_SECRET")
+
+if not SECRET_KEY:
+    print("ERRO CRÍTICO: Variável de ambiente SESSION_SECRET não configurada!")
+    print("Configure SESSION_SECRET antes de iniciar a aplicação.")
+    sys.exit(1)
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 480
 
