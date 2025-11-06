@@ -9,6 +9,12 @@ class ProspeccaoBase(BaseModel):
     hora_ligacao: Optional[time] = None
     resultado: Optional[str] = None
     observacoes: Optional[str] = None
+    interesse_treinamento: bool = False
+    interesse_consultoria: bool = False
+    interesse_certificacao: bool = False
+    interesse_eventos: bool = False
+    interesse_produtos: bool = False
+    outros_interesses: Optional[str] = None
 
 class ProspeccaoCriar(ProspeccaoBase):
     pass

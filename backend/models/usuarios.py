@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Enum
+from sqlalchemy.orm import relationship
 from backend.database import Base
 import enum
 
@@ -14,3 +15,5 @@ class Usuario(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     senha_hash = Column(String, nullable=False)
     tipo = Column(Enum(TipoUsuario), nullable=False, default=TipoUsuario.consultor)
+    
+    empresas_atribuidas = relationship("AtribuicaoEmpresa", back_populates="consultor")

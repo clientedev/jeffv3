@@ -4,8 +4,8 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from backend.database import engine, Base, SessionLocal
-from backend.models import Usuario, Empresa, Prospeccao, Agendamento
-from backend.routers import auth, empresas, prospeccoes, agendamentos, admin
+from backend.models import Usuario, Empresa, Prospeccao, Agendamento, AtribuicaoEmpresa
+from backend.routers import auth, empresas, prospeccoes, agendamentos, admin, atribuicoes
 from backend.utils.seed import criar_usuario_admin_padrao
 
 Base.metadata.create_all(bind=engine)
@@ -34,6 +34,7 @@ app.include_router(admin.router)
 app.include_router(empresas.router)
 app.include_router(prospeccoes.router)
 app.include_router(agendamentos.router)
+app.include_router(atribuicoes.router)
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
@@ -62,6 +63,10 @@ async def alertas_page(request: Request):
 @app.get("/admin/usuarios", response_class=HTMLResponse)
 async def admin_usuarios_page(request: Request):
     return templates.TemplateResponse("admin_usuarios.html", {"request": request})
+
+@app.get("/admin/atribuicoes", response_class=HTMLResponse)
+async def admin_atribuicoes_page(request: Request):
+    return templates.TemplateResponse("admin_atribuicoes.html", {"request": request})
 
 if __name__ == "__main__":
     import uvicorn
