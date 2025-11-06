@@ -38,3 +38,17 @@ python-multipart
 sqlalchemy
 uvicorn[standard]
 reportlab
+bcrypt
+email-validator
+fastapi
+jinja2
+openpyxl
+passlib
+psycopg2-binary
+pydantic[email]
+pydantic-settings
+python-jose[cryptography]
+python-multipart
+reportlab
+sqlalchemy
+uvicorn[standard]
