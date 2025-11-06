@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Prospecções - Núcleo 1.03{% endblock %}
+
+{% block content %}
+<div class="flex h-screen">
+    <aside class="w-64 bg-dark-sidebar shadow-xl">
+        <div class="p-6">
+            <h1 class="text-2xl font-bold text-white">Núcleo 1.03</h1>
+            <p class="text-gray-400 text-sm mt-1" id="userInfo"></p>
+        </div>
+        
+        <nav class="mt-6">
+            <a href="/dashboard" class="flex items-center px-6 py-3 text-gray-300 hover:bg-dark-hover hover:text-white transition">
+                <span>Dashboard</span>
+            </a>
+            <a href="/empresas" class="flex items-center px-6 py-3 text-gray-300 hover:bg-dark-hover hover:text-white transition">
+                <span>Empresas</span>
+            </a>
+            <a href="/prospeccao" class="flex items-center px-6 py-3 bg-dark-hover text-white border-l-4 border-blue-500">
+                <span>Prospecções</span>
+            </a>
+            <a href="/alertas" class="flex items-center px-6 py-3 text-gray-300 hover:bg-dark-hover hover:text-white transition">
+                <span>Alertas</span>
+            </a>
+        </nav>
+        
+        <div class="absolute bottom-0 w-64 p-6">
+            <button onclick="logout()" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition">
+                Sair
+            </button>
+        </div>
+    </aside>
+    
+    <main class="flex-1 overflow-y-auto">
+        <header class="bg-dark-sidebar shadow-lg p-6">
+            <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-semibold text-white">Prospecções</h2>
+                <div class="flex gap-3">
+                    <button onclick="showUploadExcelModal()" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition">
+                        📊 Upload Excel
+                    </button>
+                    <button onclick="showNovaProspeccaoModal()" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition">
+                        + Nova Prospecção
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="prospeccoesCards">
+                <div class="col-span-full text-center py-8 text-gray-400">Carregando prospecções...</div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="uploadExcelModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center px-4 z-50">
+    <div class="max-w-lg w-full bg-dark-sidebar p-8 rounded-lg shadow-2xl">
+        <h2 class="text-2xl font-bold text-white mb-6">Upload de Empresas (Excel)</h2>
+        <div class="mb-4 text-gray-300 text-sm">
+            <p>Envie um arquivo Excel com os dados das empresas.</p>
+            <p class="mt-2 text-gray-400">• Empresas já cadastradas serão ignoradas</p>
+            <p class="text-gray-400">• Apenas novos registros serão adicionados</p>
+        </div>
+        <form id="uploadExcelForm" class="space-y-4">
+            <div>
+                <input type="file" id="excelFile" accept=".xlsx,.xls" required class="w-full px-4 py-2 bg-dark-card text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+            <div class="flex space-x-3">
+                <button type="submit" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition">
+                    Upload
+                </button>
+                <button type="button" onclick="hideUploadExcelModal()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-4 rounded-lg transition">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+        <div id="uploadResult" class="mt-4 hidden"></div>
+    </div>
+</div>
+
+<div id="novaProspeccaoModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center px-4 z-50 overflow-y-auto">
+    <div class="max-w-4xl w-full bg-dark-sidebar p-8 rounded-lg shadow-2xl my-8">
+        <h2 class="text-2xl font-bold text-white mb-6">🎯 Nova Prospecção</h2>
+        <form id="novaProspeccaoForm" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Empresa *</label>
+                    <select id="empresa_id" required class="w-full px-4 py-2 bg-dark-card text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Carregando empresas...</option>
+                    </select>
+                </div>
+                <div id="consultorDiv">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Consultor *</label>
+                    <select id="consultor_id" required class="w-full px-4 py-2 bg-dark-card text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Carregando consultores...</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Data da Ligação</label>
+                    <input type="date" id="data_ligacao" class="w-full px-4 py-2 bg-dark-card text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Hora da Ligação</label>
+                    <input type="time" id="hora_ligacao" class="w-full px-4 py-2 bg-dark-card text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Resultado</label>
+                <select id="resultado" class="w-full px-4 py-2 bg-dark-card text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Selecione...</option>
+                    <option value="Interesse">✅ Interesse</option>
+                    <option value="Sem interesse">❌ Sem interesse</option>
+                    <option value="Retornar depois">⏳ Retornar depois</option>
+                    <option value="Não atendeu">📞 Não atendeu</option>
+                    <option value="Número inválido">🚫 Número inválido</option>
+                </select>
+            </div>
+            
+            <div class="bg-dark-card p-6 rounded-lg">
+                <h3 class="text-lg font-semibold text-white mb-4">✅ Interesses do Cliente</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <label class="flex items-center space-x-3 cursor-pointer hover:bg-dark-sidebar p-3 rounded transition">
+                        <input type="checkbox" id="interesse_treinamento" class="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500">
+                        <span class="text-gray-300">📚 Treinamento</span>
+                    </label>
+                    <label class="flex items-center space-x-3 cursor-pointer hover:bg-dark-sidebar p-3 rounded transition">
+                        <input type="checkbox" id="interesse_consultoria" class="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500">
+                        <span class="text-gray-300">💼 Consultoria</span>
+                    </label>
+                    <label class="flex items-center space-x-3 cursor-pointer hover:bg-dark-sidebar p-3 rounded transition">
+                        <input type="checkbox" id="interesse_certificacao" class="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500">
+                        <span class="text-gray-300">🎓 Certificação</span>
+                    </label>
+                    <label class="flex items-center space-x-3 cursor-pointer hover:bg-dark-sidebar p-3 rounded transition">
+                        <input type="checkbox" id="interesse_eventos" class="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500">
+                        <span class="text-gray-300">🎪 Eventos</span>
+                    </label>
+                    <label class="flex items-center space-x-3 cursor-pointer hover:bg-dark-sidebar p-3 rounded transition">
+                        <input type="checkbox" id="interesse_produtos" class="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500">
+                        <span class="text-gray-300">📦 Produtos</span>
+                    </label>
+                </div>
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Outros Interesses</label>
+                    <input type="text" id="outros_interesses" placeholder="Especifique outros interesses..." class="w-full px-4 py-2 bg-dark-sidebar text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Observações</label>
+                <textarea id="observacoes" rows="3" placeholder="Detalhes da conversa, próximos passos, etc..." class="w-full px-4 py-2 bg-dark-card text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+            
+            <div class="bg-dark-card p-6 rounded-lg">
+                <label class="flex items-center space-x-3 cursor-pointer">
+                    <input type="checkbox" id="agendar_proxima" class="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500">
+                    <span class="text-gray-300 font-semibold">📅 Agendar próxima ligação automaticamente</span>
+                </label>
+                <div id="agendamentoOptions" class="mt-4 hidden">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Dias para próxima ligação</label>
+                    <input type="number" id="dias_proxima_ligacao" value="7" min="1" max="90" class="w-full px-4 py-2 bg-dark-sidebar text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            
+            <div class="flex space-x-3">
+                <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition">
+                    💾 Salvar Prospecção
+                </button>
+                <button type="button" onclick="hideNovaProspeccaoModal()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-4 rounded-lg transition">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/prospeccao_nova.js"></script>
+{% endblock %}

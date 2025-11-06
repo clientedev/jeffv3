@@ -55,7 +55,7 @@ async def empresa_perfil(request: Request, empresa_id: int):
 
 @app.get("/prospeccao", response_class=HTMLResponse)
 async def prospeccao_page(request: Request):
-    return templates.TemplateResponse("prospeccao.html", {"request": request})
+    return templates.TemplateResponse("prospeccao_nova.html", {"request": request})
 
 @app.get("/alertas", response_class=HTMLResponse)
 async def alertas_page(request: Request):

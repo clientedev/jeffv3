@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from backend.database import get_db
 from backend.models import Prospeccao, Usuario, Empresa, Agendamento
+from backend.models.agendamentos import StatusAgendamento
 from backend.schemas.prospeccoes import ProspeccaoCriar, ProspeccaoResposta
 from backend.auth.security import obter_usuario_atual, obter_usuario_admin
 from reportlab.lib.pagesizes import letter, A4
@@ -120,15 +121,12 @@ def criar_prospeccao_com_agendamento(
     db.flush()
     
     if agendar_proxima:
-        data_proxima = datetime.now().date() + timedelta(days=dias_proxima_ligacao)
+        data_proxima = datetime.now() + timedelta(days=dias_proxima_ligacao)
         novo_agendamento = Agendamento(
             prospeccao_id=nova_prospeccao.id,
-            consultor_id=prospeccao.consultor_id,
-            empresa_id=prospeccao.empresa_id,
-            data_agendamento=data_proxima,
-            tipo="ligacao",
-            status="pendente",
-            observacao=f"Retorno da prospecção anterior - {prospeccao.resultado}"
+            data_agendada=data_proxima,
+            status=StatusAgendamento.pendente,
+            observacoes=f"Retorno da prospecção anterior - {prospeccao.resultado}"
         )
         db.add(novo_agendamento)
     
