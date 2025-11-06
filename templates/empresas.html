@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Empresas - Núcleo 1.03{% endblock %}
+
+{% block content %}
+<div class="flex h-screen">
+    <aside class="w-64 bg-dark-sidebar shadow-xl">
+        <div class="p-6">
+            <h1 class="text-2xl font-bold text-white">Núcleo 1.03</h1>
+            <p class="text-gray-400 text-sm mt-1" id="userInfo"></p>
+        </div>
+        
+        <nav class="mt-6">
+            <a href="/dashboard" class="flex items-center px-6 py-3 text-gray-300 hover:bg-dark-hover hover:text-white transition">
+                <span>Dashboard</span>
+            </a>
+            <a href="/empresas" class="flex items-center px-6 py-3 bg-dark-hover text-white border-l-4 border-blue-500">
+                <span>Empresas</span>
+            </a>
+            <a href="/prospeccao" class="flex items-center px-6 py-3 text-gray-300 hover:bg-dark-hover hover:text-white transition">
+                <span>Prospecções</span>
+            </a>
+            <a href="/alertas" class="flex items-center px-6 py-3 text-gray-300 hover:bg-dark-hover hover:text-white transition">
+                <span>Alertas</span>
+            </a>
+        </nav>
+        
+        <div class="absolute bottom-0 w-64 p-6">
+            <button onclick="logout()" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition">
+                Sair
+            </button>
+        </div>
+    </aside>
+    
+    <main class="flex-1 overflow-y-auto">
+        <header class="bg-dark-sidebar shadow-lg p-6">
+            <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-semibold text-white">Empresas</h2>
+                <button id="btnNovaEmpresa" onclick="showNovaEmpresaModal()" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition">
+                    + Nova Empresa
+                </button>
+            </div>
+        </header>
+        
+        <div class="p-6">
+            <div class="bg-dark-sidebar rounded-lg p-6 shadow-lg mb-6">
+                <h3 class="text-lg font-semibold text-white mb-4">Filtros</h3>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <input type="text" id="filtroNome" placeholder="Nome da empresa" 
+                        class="px-4 py-2 bg-dark-card text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" id="filtroCNPJ" placeholder="CNPJ"
+                        class="px-4 py-2 bg-dark-card text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" id="filtroMunicipio" placeholder="Município"
+                        class="px-4 py-2 bg-dark-card text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" id="filtroER" placeholder="ER"
+                        class="px-4 py-2 bg-dark-card text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button onclick="aplicarFiltros()" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition">
+                        Filtrar
+                    </button>
+                </div>
+            </div>
+            
+            <div class="bg-dark-sidebar rounded-lg shadow-lg overflow-hidden">
+                <table class="w-full">
+                    <thead class="bg-dark-card">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Empresa</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">CNPJ</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Município</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">ER</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Carteira</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaEmpresas" class="divide-y divide-gray-700">
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center text-gray-400">Carregando empresas...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="novaEmpresaModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center px-4 overflow-y-auto">
+    <div class="max-w-4xl w-full bg-dark-sidebar p-8 rounded-lg shadow-2xl my-8">
+        <h2 class="text-2xl font-bold text-white mb-6">Nova Empresa</h2>
+        <form id="novaEmpresaForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Empresa *</label>
+                <input type="text" id="empresa" required class="w-full px-4 py-2 bg-dark-card text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">CNPJ</label>
+                <input type="text" id="cnpj" class="w-full px-4 py-2 bg-dark-card text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Sigla</label>
+                <input type="text" id="sigla" class="w-full px-4 py-2 bg-dark-card text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Porte</label>
+                <input type="text" id="porte" class="w-full px-4 py-2 bg-dark-card text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">ER</label>
+                <input type="text" id="er" class="w-full px-4 py-2 bg-dark-card text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Carteira</label>
+                <input type="text" id="carteira" placeholder="Ex: 1.01" class="w-full px-4 py-2 bg-dark-card text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-300 mb-2">Endereço</label>
+                <input type="text" id="endereco" class="w-full px-4 py-2 bg-dark-card text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Bairro</label>
+                <input type="text" id="bairro" class="w-full px-4 py-2 bg-dark-card text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Município</label>
+                <input type="text" id="municipio" class="w-full px-4 py-2 bg-dark-card text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Estado</label>
+                <input type="text" id="estado" maxlength="2" class="w-full px-4 py-2 bg-dark-card text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Nº de Funcionários</label>
+                <input type="number" id="numero_funcionarios" class="w-full px-4 py-2 bg-dark-card text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-300 mb-2">Observação</label>
+                <textarea id="observacao" rows="3" class="w-full px-4 py-2 bg-dark-card text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+            <div class="md:col-span-2 flex space-x-3">
+                <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition">
+                    Salvar Empresa
+                </button>
+                <button type="button" onclick="hideNovaEmpresaModal()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-4 rounded-lg transition">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/empresas.js"></script>
+{% endblock %}
