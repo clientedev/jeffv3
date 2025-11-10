@@ -4,8 +4,8 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from backend.database import engine, Base, SessionLocal
-from backend.models import Usuario, Empresa, Prospeccao, Agendamento, AtribuicaoEmpresa
-from backend.routers import auth, empresas, prospeccoes, agendamentos, admin, atribuicoes, consultores, dashboard, cnpj
+from backend.models import Usuario, Empresa, Prospeccao, Agendamento, AtribuicaoEmpresa, Notificacao
+from backend.routers import auth, empresas, prospeccoes, agendamentos, admin, atribuicoes, consultores, dashboard, cnpj, notificacoes
 from backend.utils.seed import criar_usuario_admin_padrao, criar_empresas_padrao, criar_consultores_padrao
 
 Base.metadata.create_all(bind=engine)
@@ -40,6 +40,7 @@ app.include_router(atribuicoes.router)
 app.include_router(consultores.router)
 app.include_router(dashboard.router)
 app.include_router(cnpj.router)
+app.include_router(notificacoes.router)
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
