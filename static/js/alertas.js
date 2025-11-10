@@ -9,7 +9,8 @@ async function carregarAlertas() {
         const alertas = await response.json();
         
         const empresasResponse = await apiRequest('/api/empresas/');
-        const empresas = await empresasResponse.json();
+        const empresasData = await empresasResponse.json();
+        const empresas = empresasData.items || empresasData;
         
         const prospeccoesResponse = await apiRequest('/api/prospeccoes/');
         const prospeccoes = await prospeccoesResponse.json();
@@ -35,16 +36,16 @@ function mostrarAlertas(elementId, alertas, empresas, prospeccoes, colorClass) {
         const empresa = prospeccao ? empresas.find(e => e.id === prospeccao.empresa_id) : null;
         
         return `
-            <div class="bg-dark-card p-4 rounded">
+            <div class="bg-dark-card p-4 rounded hover:bg-dark-sidebar cursor-pointer transition" onclick="window.location.href='/empresa/${empresa ? empresa.id : '#'}'">
                 <div class="flex justify-between items-start">
-                    <div>
+                    <div class="flex-1">
                         <p class="font-semibold ${colorClass}">${empresa ? empresa.empresa : 'Empresa não encontrada'}</p>
-                        <p class="text-gray-300 text-sm mt-1">${new Date(alerta.data_agendada).toLocaleString('pt-BR')}</p>
+                        <p class="text-gray-300 text-sm mt-1">📞 Ligação agendada: ${new Date(alerta.data_agendada).toLocaleString('pt-BR')}</p>
                         <p class="text-gray-400 text-sm mt-2">${alerta.observacoes || 'Sem observações'}</p>
                     </div>
-                    <button onclick="marcarComoRealizado(${alerta.id})" 
-                        class="text-green-400 hover:text-green-300 text-sm">
-                        Marcar como realizado
+                    <button onclick="event.stopPropagation(); marcarComoRealizado(${alerta.id})" 
+                        class="text-green-400 hover:text-green-300 text-sm ml-4 flex-shrink-0">
+                        ✓ Realizado
                     </button>
                 </div>
             </div>

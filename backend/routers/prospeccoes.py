@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List
 from backend.database import get_db
 from backend.models import Prospeccao, Usuario, Empresa, Agendamento
@@ -56,7 +56,10 @@ def listar_prospeccoes(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(obter_usuario_atual)
 ):
-    query = db.query(Prospeccao)
+    query = db.query(Prospeccao).options(
+        joinedload(Prospeccao.empresa),
+        joinedload(Prospeccao.consultor)
+    )
     
     if usuario.tipo != "admin":
         query = query.filter(Prospeccao.consultor_id == usuario.id)
@@ -73,7 +76,10 @@ def obter_prospeccao(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(obter_usuario_atual)
 ):
-    prospeccao = db.query(Prospeccao).filter(Prospeccao.id == prospeccao_id).first()
+    prospeccao = db.query(Prospeccao).options(
+        joinedload(Prospeccao.empresa),
+        joinedload(Prospeccao.consultor)
+    ).filter(Prospeccao.id == prospeccao_id).first()
     if not prospeccao:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

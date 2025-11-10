@@ -1,6 +1,21 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from datetime import datetime, date, time
+
+class EmpresaResumo(BaseModel):
+    id: int
+    empresa: str
+    municipio: Optional[str] = None
+    estado: Optional[str] = None
+    
+    model_config = ConfigDict(from_attributes=True)
+
+class UsuarioResumo(BaseModel):
+    id: int
+    nome: str
+    email: str
+    
+    model_config = ConfigDict(from_attributes=True)
 
 class ProspeccaoBase(BaseModel):
     empresa_id: int
@@ -52,6 +67,7 @@ class ProspeccaoCriar(ProspeccaoBase):
 class ProspeccaoResposta(ProspeccaoBase):
     id: int
     data_criacao: datetime
+    empresa: Optional[EmpresaResumo] = None
+    consultor: Optional[UsuarioResumo] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
