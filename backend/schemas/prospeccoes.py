@@ -10,10 +10,28 @@ class ProspeccaoBase(BaseModel):
     resultado: Optional[str] = None
     observacoes: Optional[str] = None
     
+    porte: Optional[str] = None
+    lr: Optional[str] = None
+    id_externo: Optional[str] = None
+    cfr: Optional[str] = None
+    tipo_producao: Optional[str] = None
+    data_prospeccao: Optional[date] = None
+    follow_up: Optional[date] = None
+    
     nome_contato: Optional[str] = None
+    cargo: Optional[str] = None
+    celular: Optional[str] = None
+    telefone: Optional[str] = None
     telefone_contato: Optional[str] = None
     email_contato: Optional[str] = None
     cargo_contato: Optional[str] = None
+    cnpj: Optional[str] = None
+    
+    status_prospeccao: Optional[str] = None
+    responsavel: Optional[str] = None
+    opcoes: Optional[str] = None
+    retorno: Optional[str] = None
+    observacoes_prospeccao: Optional[str] = None
     
     interesse_treinamento: bool = False
     interesse_consultoria: bool = False
@@ -26,6 +44,7 @@ class ProspeccaoBase(BaseModel):
     
     potencial_negocio: Optional[str] = None
     status_follow_up: Optional[str] = None
+    proxima_prospeccao_data: Optional[date] = None
 
 class ProspeccaoCriar(ProspeccaoBase):
     pass

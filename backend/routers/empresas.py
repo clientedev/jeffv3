@@ -31,10 +31,10 @@ def criar_empresa(
     db.refresh(nova_empresa)
     return nova_empresa
 
-@router.get("/", response_model=List[EmpresaResposta])
+@router.get("/")
 def listar_empresas(
-    skip: int = 0,
-    limit: int = 100,
+    page: int = Query(1, ge=1, description="Número da página"),
+    page_size: int = Query(20, ge=1, le=100, description="Items por página"),
     nome: Optional[str] = None,
     cnpj: Optional[str] = None,
     municipio: Optional[str] = None,
@@ -56,8 +56,22 @@ def listar_empresas(
     if carteira:
         query = query.filter(Empresa.carteira == carteira)
     
-    empresas = query.offset(skip).limit(limit).all()
-    return empresas
+    total_count = query.count()
+    total_pages = (total_count + page_size - 1) // page_size
+    
+    skip = (page - 1) * page_size
+    empresas = query.offset(skip).limit(page_size).all()
+    
+    from backend.schemas.empresas import EmpresaResposta
+    items_safe = [EmpresaResposta.model_validate(e) for e in empresas]
+    
+    return {
+        "items": items_safe,
+        "total_count": total_count,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": total_pages
+    }
 
 @router.get("/{empresa_id}", response_model=EmpresaResposta)
 def obter_empresa(

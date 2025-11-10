@@ -8,25 +8,33 @@ if (usuario.tipo !== 'admin') {
     document.getElementById('btnUploadExcel').style.display = 'none';
 }
 
-async function carregarEmpresas(filtros = {}) {
+let paginaAtual = 1;
+const itensPorPagina = 20;
+let filtrosAtuais = {};
+
+async function carregarEmpresas(filtros = {}, pagina = 1) {
     try {
-        let url = '/api/empresas/?';
-        if (filtros.nome) url += `nome=${filtros.nome}&`;
-        if (filtros.cnpj) url += `cnpj=${filtros.cnpj}&`;
-        if (filtros.municipio) url += `municipio=${filtros.municipio}&`;
-        if (filtros.er) url += `er=${filtros.er}&`;
+        paginaAtual = pagina;
+        filtrosAtuais = filtros;
+        
+        let url = `/api/empresas/?page=${pagina}&page_size=${itensPorPagina}`;
+        if (filtros.nome) url += `&nome=${filtros.nome}`;
+        if (filtros.cnpj) url += `&cnpj=${filtros.cnpj}`;
+        if (filtros.municipio) url += `&municipio=${filtros.municipio}`;
+        if (filtros.er) url += `&er=${filtros.er}`;
         
         const response = await apiRequest(url);
-        const empresas = await response.json();
+        const data = await response.json();
         
         const tbody = document.getElementById('tabelaEmpresas');
         
-        if (empresas.length === 0) {
+        if (!data.items || data.items.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-400">Nenhuma empresa encontrada</td></tr>';
+            atualizarPaginacao({total_count: 0, page: 1, page_size: itensPorPagina, total_pages: 0});
             return;
         }
         
-        tbody.innerHTML = empresas.map(emp => `
+        tbody.innerHTML = data.items.map(emp => `
             <tr class="hover:bg-dark-hover cursor-pointer" onclick="window.location.href='/empresa/${emp.id}'">
                 <td class="px-6 py-4 text-gray-300">${emp.empresa}</td>
                 <td class="px-6 py-4 text-gray-300">${emp.cnpj || '-'}</td>
@@ -39,9 +47,61 @@ async function carregarEmpresas(filtros = {}) {
                 </td>
             </tr>
         `).join('');
+        
+        atualizarPaginacao(data);
     } catch (error) {
         console.error('Erro ao carregar empresas:', error);
+        document.getElementById('tabelaEmpresas').innerHTML = 
+            '<tr><td colspan="6" class="px-6 py-8 text-center text-red-400">Erro ao carregar empresas</td></tr>';
     }
+}
+
+function atualizarPaginacao(data) {
+    const info = document.getElementById('paginacaoInfo');
+    const controles = document.getElementById('paginacaoControles');
+    
+    if (!info || !controles) return;
+    
+    if (data.total_count === 0) {
+        info.textContent = 'Nenhuma empresa encontrada';
+        controles.innerHTML = '';
+        return;
+    }
+    
+    const inicio = (data.page - 1) * data.page_size + 1;
+    const fim = Math.min(data.page * data.page_size, data.total_count);
+    
+    info.textContent = `Mostrando ${inicio} a ${fim} de ${data.total_count} empresas`;
+    
+    let botoesHTML = '';
+    
+    if (data.page > 1) {
+        botoesHTML += `<button onclick="carregarEmpresas(filtrosAtuais, 1)" class="px-3 py-1 bg-dark-card text-gray-300 rounded hover:bg-dark-hover">Primeira</button>`;
+        botoesHTML += `<button onclick="carregarEmpresas(filtrosAtuais, ${data.page - 1})" class="px-3 py-1 bg-dark-card text-gray-300 rounded hover:bg-dark-hover">Anterior</button>`;
+    }
+    
+    const maxBotoes = 5;
+    let inicioPagina = Math.max(1, data.page - Math.floor(maxBotoes / 2));
+    let fimPagina = Math.min(data.total_pages, inicioPagina + maxBotoes - 1);
+    
+    if (fimPagina - inicioPagina < maxBotoes - 1) {
+        inicioPagina = Math.max(1, fimPagina - maxBotoes + 1);
+    }
+    
+    for (let i = inicioPagina; i <= fimPagina; i++) {
+        if (i === data.page) {
+            botoesHTML += `<button class="px-3 py-1 bg-blue-600 text-white rounded">${i}</button>`;
+        } else {
+            botoesHTML += `<button onclick="carregarEmpresas(filtrosAtuais, ${i})" class="px-3 py-1 bg-dark-card text-gray-300 rounded hover:bg-dark-hover">${i}</button>`;
+        }
+    }
+    
+    if (data.page < data.total_pages) {
+        botoesHTML += `<button onclick="carregarEmpresas(filtrosAtuais, ${data.page + 1})" class="px-3 py-1 bg-dark-card text-gray-300 rounded hover:bg-dark-hover">Próxima</button>`;
+        botoesHTML += `<button onclick="carregarEmpresas(filtrosAtuais, ${data.total_pages})" class="px-3 py-1 bg-dark-card text-gray-300 rounded hover:bg-dark-hover">Última</button>`;
+    }
+    
+    controles.innerHTML = botoesHTML;
 }
 
 function aplicarFiltros() {
@@ -51,7 +111,7 @@ function aplicarFiltros() {
         municipio: document.getElementById('filtroMunicipio').value,
         er: document.getElementById('filtroER').value
     };
-    carregarEmpresas(filtros);
+    carregarEmpresas(filtros, 1);
 }
 
 function showNovaEmpresaModal() {

@@ -15,10 +15,28 @@ class Prospeccao(Base):
     observacoes = Column(Text)
     data_criacao = Column(DateTime, default=datetime.utcnow)
     
+    porte = Column(String(50))
+    lr = Column(String(50))
+    id_externo = Column(String(100))
+    cfr = Column(String(50))
+    tipo_producao = Column(String(200))
+    data_prospeccao = Column(Date)
+    follow_up = Column(Date)
+    
     nome_contato = Column(String(200))
+    cargo = Column(String(200))
+    celular = Column(String(50))
+    telefone = Column(String(50))
     telefone_contato = Column(String(50))
     email_contato = Column(String(200))
     cargo_contato = Column(String(200))
+    cnpj = Column(String(50))
+    
+    status_prospeccao = Column(String(100))
+    responsavel = Column(String(200))
+    opcoes = Column(Text)
+    retorno = Column(Text)
+    observacoes_prospeccao = Column(Text)
     
     interesse_treinamento = Column(Boolean, default=False)
     interesse_consultoria = Column(Boolean, default=False)
@@ -31,7 +49,8 @@ class Prospeccao(Base):
     
     potencial_negocio = Column(String(50))
     status_follow_up = Column(String(100))
+    proxima_prospeccao_data = Column(Date)
 
     empresa = relationship("Empresa", back_populates="prospeccoes")
-    consultor = relationship("Usuario")
+    consultor = relationship("Usuario", foreign_keys=[consultor_id], overlaps="prospeccoes")
     agendamentos = relationship("Agendamento", back_populates="prospeccao")
