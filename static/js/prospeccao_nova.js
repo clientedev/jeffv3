@@ -160,16 +160,29 @@ empresaSearchInput.addEventListener('input', async function() {
                 return;
             }
             
-            empresaAutocomplete.innerHTML = empresas.map(empresa => `
-                <div class="p-3 hover:bg-dark-hover cursor-pointer border-b border-gray-700 last:border-0" 
-                     data-empresa-id="${empresa.id}"
-                     data-empresa-nome="${empresa.empresa}"
-                     data-empresa-municipio="${empresa.municipio || ''}"
-                     onclick="selecionarEmpresa(${empresa.id}, '${empresa.empresa.replace(/'/g, "\\'")}', '${(empresa.municipio || '').replace(/'/g, "\\'")}')">
-                    <div class="text-white font-medium">${empresa.empresa}</div>
-                    <div class="text-gray-400 text-sm">${empresa.municipio || 'N/A'} - ${empresa.estado || 'N/A'}</div>
-                </div>
-            `).join('');
+            empresaAutocomplete.innerHTML = '';
+            empresas.forEach(empresa => {
+                const div = document.createElement('div');
+                div.className = 'p-3 hover:bg-dark-hover cursor-pointer border-b border-gray-700 last:border-0';
+                div.dataset.empresaId = empresa.id;
+                
+                const nomeDiv = document.createElement('div');
+                nomeDiv.className = 'text-white font-medium';
+                nomeDiv.textContent = empresa.empresa;
+                
+                const localDiv = document.createElement('div');
+                localDiv.className = 'text-gray-400 text-sm';
+                localDiv.textContent = `${empresa.municipio || 'N/A'} - ${empresa.estado || 'N/A'}`;
+                
+                div.appendChild(nomeDiv);
+                div.appendChild(localDiv);
+                
+                div.addEventListener('click', () => {
+                    selecionarEmpresa(empresa.id, empresa.empresa, empresa.municipio || '');
+                });
+                
+                empresaAutocomplete.appendChild(div);
+            });
             
             empresaAutocomplete.classList.remove('hidden');
         } catch (error) {
@@ -241,6 +254,12 @@ async function carregarConsultores() {
 
 document.getElementById('novaProspeccaoForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    
+    const empresaIdValue = document.getElementById('empresa_id').value;
+    if (!empresaIdValue || isNaN(parseInt(empresaIdValue))) {
+        alert('Por favor, selecione uma empresa da lista de sugestões');
+        return;
+    }
     
     const consultorId = usuario.tipo === 'admin' ? 
         parseInt(document.getElementById('consultor_id').value) : 
