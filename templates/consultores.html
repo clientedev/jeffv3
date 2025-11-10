@@ -2,41 +2,10 @@
 
 {% block title %}Consultores - Núcleo 1.03{% endblock %}
 
+{% set active_page = 'consultores' %}
 {% block content %}
 <div class="flex h-screen">
-    <aside class="w-64 bg-dark-sidebar shadow-xl">
-        <div class="p-6">
-            <h1 class="text-2xl font-bold text-white">Núcleo 1.03</h1>
-            <p class="text-gray-400 text-sm mt-1" id="userInfo"></p>
-        </div>
-        
-        <nav class="mt-6">
-            <a href="/dashboard" class="flex items-center px-6 py-3 text-gray-300 hover:bg-dark-hover hover:text-white transition">
-                <span>Dashboard</span>
-            </a>
-            <a href="/empresas" class="flex items-center px-6 py-3 text-gray-300 hover:bg-dark-hover hover:text-white transition">
-                <span>Empresas</span>
-            </a>
-            <a href="/prospeccao" class="flex items-center px-6 py-3 text-gray-300 hover:bg-dark-hover hover:text-white transition">
-                <span>Prospecções</span>
-            </a>
-            <a href="/consultores" class="flex items-center px-6 py-3 bg-dark-hover text-white border-l-4 border-blue-500">
-                <span>Consultores</span>
-            </a>
-            <a href="/alertas" class="flex items-center px-6 py-3 text-gray-300 hover:bg-dark-hover hover:text-white transition">
-                <span>Alertas</span>
-            </a>
-            <a href="/admin/usuarios" id="adminLink" class="hidden flex items-center px-6 py-3 text-gray-300 hover:bg-dark-hover hover:text-white transition">
-                <span>Administração</span>
-            </a>
-        </nav>
-        
-        <div class="absolute bottom-0 w-64 p-6">
-            <button onclick="logout()" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition">
-                Sair
-            </button>
-        </div>
-    </aside>
+    {% include "partials/sidebar.html" %}
     
     <main class="flex-1 overflow-y-auto">
         <header class="bg-dark-sidebar shadow-lg p-6">
