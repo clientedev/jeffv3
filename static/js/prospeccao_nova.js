@@ -128,8 +128,76 @@ async function exportarPDF(prospeccaoId) {
     }
 }
 
+let empresaSelecionada = null;
+
+const empresaSearchInput = document.getElementById('empresa_search');
+const empresaAutocomplete = document.getElementById('empresa_autocomplete');
+const empresaIdInput = document.getElementById('empresa_id');
+
+let searchTimeout;
+
+empresaSearchInput.addEventListener('input', async function() {
+    const query = this.value.trim();
+    
+    clearTimeout(searchTimeout);
+    
+    if (query.length < 2) {
+        empresaAutocomplete.classList.add('hidden');
+        empresaIdInput.value = '';
+        empresaSelecionada = null;
+        return;
+    }
+    
+    searchTimeout = setTimeout(async () => {
+        try {
+            const response = await apiRequest(`/api/empresas/?nome=${encodeURIComponent(query)}&page_size=10`);
+            const data = await response.json();
+            const empresas = data.items || [];
+            
+            if (empresas.length === 0) {
+                empresaAutocomplete.innerHTML = '<div class="p-3 text-gray-400 text-sm">Nenhuma empresa encontrada</div>';
+                empresaAutocomplete.classList.remove('hidden');
+                return;
+            }
+            
+            empresaAutocomplete.innerHTML = empresas.map(empresa => `
+                <div class="p-3 hover:bg-dark-hover cursor-pointer border-b border-gray-700 last:border-0" 
+                     data-empresa-id="${empresa.id}"
+                     data-empresa-nome="${empresa.empresa}"
+                     data-empresa-municipio="${empresa.municipio || ''}"
+                     onclick="selecionarEmpresa(${empresa.id}, '${empresa.empresa.replace(/'/g, "\\'")}', '${(empresa.municipio || '').replace(/'/g, "\\'")}')">
+                    <div class="text-white font-medium">${empresa.empresa}</div>
+                    <div class="text-gray-400 text-sm">${empresa.municipio || 'N/A'} - ${empresa.estado || 'N/A'}</div>
+                </div>
+            `).join('');
+            
+            empresaAutocomplete.classList.remove('hidden');
+        } catch (error) {
+            console.error('Erro ao buscar empresas:', error);
+        }
+    }, 300);
+});
+
+empresaSearchInput.addEventListener('blur', function() {
+    setTimeout(() => {
+        empresaAutocomplete.classList.add('hidden');
+    }, 200);
+});
+
+empresaSearchInput.addEventListener('focus', function() {
+    if (empresaAutocomplete.innerHTML && !empresaAutocomplete.classList.contains('hidden')) {
+        empresaAutocomplete.classList.remove('hidden');
+    }
+});
+
+function selecionarEmpresa(id, nome, municipio) {
+    empresaSelecionada = { id, nome, municipio };
+    empresaSearchInput.value = `${nome} - ${municipio || 'N/A'}`;
+    empresaIdInput.value = id;
+    empresaAutocomplete.classList.add('hidden');
+}
+
 function showNovaProspeccaoModal() {
-    carregarEmpresas();
     if (usuario.tipo === 'admin') {
         carregarConsultores();
     } else {
@@ -145,25 +213,12 @@ function hideNovaProspeccaoModal() {
     document.getElementById('agendamentoOptions').classList.add('hidden');
     document.getElementById('data_proxima_ligacao').required = false;
     document.getElementById('data_proxima_ligacao').value = '';
+    empresaSearchInput.value = '';
+    empresaIdInput.value = '';
+    empresaSelecionada = null;
+    empresaAutocomplete.classList.add('hidden');
 }
 
-async function carregarEmpresas() {
-    try {
-        const response = await apiRequest('/api/empresas/?limit=1000');
-        const empresas = await response.json();
-        
-        const select = document.getElementById('empresa_id');
-        select.innerHTML = '<option value="">Selecione uma empresa...</option>';
-        empresas.forEach(empresa => {
-            const option = document.createElement('option');
-            option.value = empresa.id;
-            option.textContent = `${empresa.empresa} - ${empresa.municipio || 'N/A'}`;
-            select.appendChild(option);
-        });
-    } catch (error) {
-        console.error('Erro ao carregar empresas:', error);
-    }
-}
 
 async function carregarConsultores() {
     try {
