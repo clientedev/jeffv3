@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Cronograma Geral - Núcleo 1.03{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold text-white">Cronograma Geral</h1>
+        <button onclick="abrirModalImportar()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition">
+            <i class="fas fa-upload mr-2"></i>Importar Planilha
+        </button>
+    </div>
+
+    <div class="bg-dark-card rounded-lg p-6 mb-6">
+        <h2 class="text-white text-lg font-semibold mb-4">Filtros</h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-gray-400 text-sm mb-2">Consultor</label>
+                <select id="filtroConsultor" class="w-full bg-dark-bg border border-gray-700 text-white rounded px-3 py-2">
+                    <option value="">Todos</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-gray-400 text-sm mb-2">Empresa</label>
+                <select id="filtroEmpresa" class="w-full bg-dark-bg border border-gray-700 text-white rounded px-3 py-2">
+                    <option value="">Todas</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-gray-400 text-sm mb-2">Data Início</label>
+                <input type="date" id="filtroDataInicio" class="w-full bg-dark-bg border border-gray-700 text-white rounded px-3 py-2">
+            </div>
+            <div>
+                <label class="block text-gray-400 text-sm mb-2">Data Fim</label>
+                <input type="date" id="filtroDataFim" class="w-full bg-dark-bg border border-gray-700 text-white rounded px-3 py-2">
+            </div>
+        </div>
+        <div class="mt-4 flex gap-2">
+            <button onclick="aplicarFiltros()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition">
+                <i class="fas fa-search mr-2"></i>Filtrar
+            </button>
+            <button onclick="limparFiltros()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded transition">
+                <i class="fas fa-redo mr-2"></i>Limpar
+            </button>
+        </div>
+    </div>
+
+    <div class="bg-dark-card rounded-lg p-6 mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-white text-lg font-semibold">Timeline de Projetos</h2>
+            <div class="flex gap-2">
+                <button onclick="alternarVisualizacao('timeline')" id="btnTimeline" class="bg-blue-600 text-white px-4 py-2 rounded transition">
+                    <i class="fas fa-chart-bar mr-2"></i>Timeline
+                </button>
+                <button onclick="alternarVisualizacao('lista')" id="btnLista" class="bg-gray-600 text-white px-4 py-2 rounded transition">
+                    <i class="fas fa-list mr-2"></i>Lista
+                </button>
+            </div>
+        </div>
+        
+        <div id="timelineView" class="overflow-x-auto">
+            <div id="ganttChart" class="min-h-[400px]"></div>
+        </div>
+        
+        <div id="listaView" class="hidden">
+            <div id="listaProjetos"></div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-dark-card rounded-lg p-6">
+            <h3 class="text-white font-semibold mb-2">Total de Projetos</h3>
+            <p class="text-3xl font-bold text-blue-500" id="totalProjetos">0</p>
+        </div>
+        <div class="bg-dark-card rounded-lg p-6">
+            <h3 class="text-white font-semibold mb-2">Em Andamento</h3>
+            <p class="text-3xl font-bold text-green-500" id="projetosAndamento">0</p>
+        </div>
+        <div class="bg-dark-card rounded-lg p-6">
+            <h3 class="text-white font-semibold mb-2">Concluídos</h3>
+            <p class="text-3xl font-bold text-purple-500" id="projetosConcluidos">0</p>
+        </div>
+    </div>
+</div>
+
+<div id="modalImportar" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-dark-card rounded-lg p-8 max-w-md w-full">
+        <h3 class="text-white text-xl font-bold mb-4">Importar Cronograma</h3>
+        <p class="text-gray-400 mb-4">
+            Para importar dados do cronograma, execute o seguinte comando no terminal:
+        </p>
+        <div class="bg-dark-bg p-4 rounded mb-4">
+            <code class="text-green-400 text-sm">python backend/utils/importar_cronograma.py attached_assets/CRONOGRAMA\ 2.0\ \(4\)_1762872257820.xlsx</code>
+        </div>
+        <p class="text-gray-400 text-sm mb-4">
+            Após a importação, atualize esta página para ver os dados.
+        </p>
+        <div class="flex justify-end gap-2">
+            <button onclick="fecharModalImportar()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded transition">
+                Fechar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/cronograma.js"></script>
+{% endblock %}

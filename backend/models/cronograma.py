@@ -39,7 +39,7 @@ class CronogramaProjeto(Base):
     endereco = Column(Text)
     regiao = Column(String(200))
     municipio = Column(String(200))
-    uf = Column(String(2))
+    uf = Column(String(50))
     contato = Column(String(200))
     telefone = Column(String(50))
     celular = Column(String(50))
