@@ -2,7 +2,10 @@
 let projetos = [];
 let consultores = [];
 let empresas = [];
-let visualizacao = 'timeline';
+let visualizacao = 'calendario';
+let mesAtual = new Date();
+let anoAtual = new Date().getFullYear();
+let mesNumero = new Date().getMonth();
 
 // Inicialização quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', () => {
@@ -107,7 +110,9 @@ function atualizarEstatisticas() {
 }
 
 function renderizarVisualizacao() {
-    if (visualizacao === 'timeline') {
+    if (visualizacao === 'calendario') {
+        renderizarCalendario();
+    } else if (visualizacao === 'timeline') {
         renderizarTimeline();
     } else {
         renderizarLista();
@@ -237,6 +242,10 @@ function renderizarLista() {
 function alternarVisualizacao(tipo) {
     visualizacao = tipo;
     
+    document.getElementById('btnCalendario').className = tipo === 'calendario' 
+        ? 'bg-blue-600 text-white px-4 py-2 rounded transition'
+        : 'bg-gray-600 text-white px-4 py-2 rounded transition';
+    
     document.getElementById('btnTimeline').className = tipo === 'timeline' 
         ? 'bg-blue-600 text-white px-4 py-2 rounded transition'
         : 'bg-gray-600 text-white px-4 py-2 rounded transition';
@@ -245,6 +254,7 @@ function alternarVisualizacao(tipo) {
         ? 'bg-blue-600 text-white px-4 py-2 rounded transition'
         : 'bg-gray-600 text-white px-4 py-2 rounded transition';
     
+    document.getElementById('calendarioView').className = tipo === 'calendario' ? 'overflow-x-auto' : 'hidden';
     document.getElementById('timelineView').className = tipo === 'timeline' ? 'overflow-x-auto' : 'hidden';
     document.getElementById('listaView').className = tipo === 'lista' ? '' : 'hidden';
     
@@ -279,4 +289,95 @@ function abrirModalImportar() {
 
 function fecharModalImportar() {
     document.getElementById('modalImportar').classList.add('hidden');
+}
+
+function renderizarCalendario() {
+    const container = document.getElementById('calendarioContainer');
+    
+    const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    
+    document.getElementById('mesAnoAtual').textContent = `${meses[mesNumero]} ${anoAtual}`;
+    
+    const primeiroDia = new Date(anoAtual, mesNumero, 1).getDay();
+    const ultimoDia = new Date(anoAtual, mesNumero + 1, 0).getDate();
+    
+    const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    
+    let html = '<div class="grid grid-cols-7 gap-2">';
+    
+    diasSemana.forEach(dia => {
+        html += `<div class="text-center font-semibold text-gray-400 p-2 border-b border-gray-700">${dia}</div>`;
+    });
+    
+    for (let i = 0; i < primeiroDia; i++) {
+        html += '<div class="bg-dark-bg rounded p-2 min-h-[100px]"></div>';
+    }
+    
+    for (let dia = 1; dia <= ultimoDia; dia++) {
+        const dataAtual = new Date(anoAtual, mesNumero, dia);
+        const dataStr = dataAtual.toISOString().split('T')[0];
+        
+        const projetosDoDia = projetos.filter(p => {
+            if (!p.data_inicio || !p.data_termino) return false;
+            const inicio = new Date(p.data_inicio).setHours(0, 0, 0, 0);
+            const fim = new Date(p.data_termino).setHours(0, 0, 0, 0);
+            const atual = dataAtual.setHours(0, 0, 0, 0);
+            return inicio <= atual && atual <= fim;
+        });
+        
+        const hoje = new Date();
+        const isHoje = dataAtual.toDateString() === hoje.toDateString();
+        const corDia = isHoje ? 'bg-blue-900 border-2 border-blue-500' : 'bg-dark-bg';
+        
+        html += `<div class="${corDia} rounded p-2 min-h-[100px] overflow-hidden">`;
+        html += `<div class="text-white font-semibold mb-1 ${isHoje ? 'text-blue-400' : ''}">${dia}</div>`;
+        
+        if (projetosDoDia.length > 0) {
+            projetosDoDia.slice(0, 3).forEach(projeto => {
+                const statusCor = {
+                    'planejado': 'bg-gray-600',
+                    'em_andamento': 'bg-green-600',
+                    'concluido': 'bg-blue-600',
+                    'pausado': 'bg-yellow-600',
+                    'cancelado': 'bg-red-600'
+                }[projeto.status] || 'bg-gray-600';
+                
+                const nomeAbreviado = (projeto.proposta || projeto.sigla || 'Projeto').substring(0, 15);
+                
+                html += `
+                    <div class="${statusCor} text-white text-xs p-1 rounded mb-1 truncate" title="${projeto.proposta || 'Sem proposta'} - ${projeto.consultor_nome || 'Sem consultor'}">
+                        ${nomeAbreviado}
+                    </div>
+                `;
+            });
+            
+            if (projetosDoDia.length > 3) {
+                html += `<div class="text-gray-400 text-xs">+${projetosDoDia.length - 3} mais</div>`;
+            }
+        }
+        
+        html += '</div>';
+    }
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function mesAnterior() {
+    mesNumero--;
+    if (mesNumero < 0) {
+        mesNumero = 11;
+        anoAtual--;
+    }
+    renderizarCalendario();
+}
+
+function proximoMes() {
+    mesNumero++;
+    if (mesNumero > 11) {
+        mesNumero = 0;
+        anoAtual++;
+    }
+    renderizarCalendario();
 }

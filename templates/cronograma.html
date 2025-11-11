@@ -47,9 +47,12 @@
 
     <div class="bg-dark-card rounded-lg p-6 mb-6">
         <div class="flex justify-between items-center mb-4">
-            <h2 class="text-white text-lg font-semibold">Timeline de Projetos</h2>
+            <h2 class="text-white text-lg font-semibold">Cronograma de Projetos</h2>
             <div class="flex gap-2">
-                <button onclick="alternarVisualizacao('timeline')" id="btnTimeline" class="bg-blue-600 text-white px-4 py-2 rounded transition">
+                <button onclick="alternarVisualizacao('calendario')" id="btnCalendario" class="bg-blue-600 text-white px-4 py-2 rounded transition">
+                    <i class="fas fa-calendar-alt mr-2"></i>Calendário
+                </button>
+                <button onclick="alternarVisualizacao('timeline')" id="btnTimeline" class="bg-gray-600 text-white px-4 py-2 rounded transition">
                     <i class="fas fa-chart-bar mr-2"></i>Timeline
                 </button>
                 <button onclick="alternarVisualizacao('lista')" id="btnLista" class="bg-gray-600 text-white px-4 py-2 rounded transition">
@@ -58,7 +61,20 @@
             </div>
         </div>
         
-        <div id="timelineView" class="overflow-x-auto">
+        <div id="calendarioView" class="overflow-x-auto">
+            <div class="flex justify-between items-center mb-4">
+                <button onclick="mesAnterior()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded transition">
+                    <i class="fas fa-chevron-left mr-2"></i>Anterior
+                </button>
+                <h3 id="mesAnoAtual" class="text-white text-xl font-semibold"></h3>
+                <button onclick="proximoMes()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded transition">
+                    Próximo<i class="fas fa-chevron-right ml-2"></i>
+                </button>
+            </div>
+            <div id="calendarioContainer" class="min-h-[500px]"></div>
+        </div>
+        
+        <div id="timelineView" class="hidden overflow-x-auto">
             <div id="ganttChart" class="min-h-[400px]"></div>
         </div>
         
