@@ -36,6 +36,14 @@ The project is structured with clear separation of concerns: `backend/` for API 
 ## Recent Changes
 
 ### November 11, 2025
+-   **Cronograma em Formato de Calendário**: Visualização de calendário implementada como visualização padrão
+    -   Adicionado botão "Calendário" como primeira opção de visualização (Timeline e Lista ainda disponíveis)
+    -   Calendário mensal exibe projetos em andamento em cada dia baseado nas datas de início e término
+    -   Navegação entre meses com botões "Anterior" e "Próximo"
+    -   Projetos coloridos por status (planejado, em_andamento, concluído, pausado, cancelado)
+    -   Dia atual destacado em azul para fácil identificação
+    -   Limite de 3 projetos exibidos por dia com contador "+X mais" quando necessário
+    -   Tooltips mostram informações completas ao passar o mouse sobre os projetos
 -   **Cronograma System Fixed and Populated**: Sistema de cronograma corrigido e dados importados com sucesso
     -   Corrigidos erros JavaScript de inicialização (checkAuth, visualizacao, projetos não definidos)
     -   Ajustada ordem de carregamento dos scripts (auth.js antes de cronograma.js)
