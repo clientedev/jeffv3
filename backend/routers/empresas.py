@@ -87,6 +87,47 @@ def obter_empresa(
         )
     return empresa
 
+@router.get("/{empresa_id}/ultimo-contato")
+def obter_ultimo_contato(
+    empresa_id: int,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(obter_usuario_atual)
+):
+    from backend.models.prospeccoes import Prospeccao
+    
+    empresa = db.query(Empresa).filter(Empresa.id == empresa_id).first()
+    if not empresa:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Empresa não encontrada"
+        )
+    
+    nome = empresa.nome_contato
+    cargo = empresa.cargo_contato
+    telefone = empresa.telefone_contato
+    email = empresa.email_contato
+    
+    if not any([nome, cargo, telefone, email]):
+        ultima_prospeccao = db.query(Prospeccao).filter(
+            Prospeccao.empresa_id == empresa_id
+        ).order_by(Prospeccao.data_criacao.desc()).first()
+        
+        if ultima_prospeccao:
+            nome = nome or ultima_prospeccao.nome_contato
+            cargo = cargo or ultima_prospeccao.cargo_contato or ultima_prospeccao.cargo
+            telefone = telefone or ultima_prospeccao.telefone_contato or ultima_prospeccao.telefone or ultima_prospeccao.celular
+            email = email or ultima_prospeccao.email_contato
+    
+    tem_contato = bool(nome or cargo or telefone or email)
+    
+    return {
+        "tem_contato": tem_contato,
+        "nome_contato": nome,
+        "cargo_contato": cargo,
+        "telefone_contato": telefone,
+        "email_contato": email
+    }
+
 @router.put("/{empresa_id}", response_model=EmpresaResposta)
 def atualizar_empresa(
     empresa_id: int,

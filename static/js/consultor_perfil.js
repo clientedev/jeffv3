@@ -1,18 +1,41 @@
 checkAuth();
-
-const usuario = getUsuario();
-document.getElementById('userInfo').textContent = `${usuario.nome} (${usuario.tipo})`;
-
-if (usuario.tipo === 'admin') {
-    document.getElementById('adminLink').classList.remove('hidden');
-}
+atualizarSidebar();
 
 let perfilAtual = null;
 let empresasDisponiveis = [];
+const usuarioLogado = getUsuario();
+
+function configurarAcoesRapidas() {
+    if (usuarioLogado && usuarioLogado.tipo === 'admin') {
+        const btnAtribuirProspeccao = document.getElementById('btnAtribuirProspeccao');
+        const btnAtribuirEmpresas = document.getElementById('btnAtribuirEmpresas');
+        const btnDefinirAcoes = document.getElementById('btnDefinirAcoes');
+        
+        if (btnAtribuirProspeccao) btnAtribuirProspeccao.classList.remove('hidden');
+        if (btnAtribuirEmpresas) btnAtribuirEmpresas.classList.remove('hidden');
+        if (btnDefinirAcoes) btnDefinirAcoes.classList.remove('hidden');
+    }
+}
+
+configurarAcoesRapidas();
 
 async function carregarPerfilConsultor() {
     try {
         const response = await apiRequest(`/api/consultores/${consultorId}`);
+        if (!response) {
+            document.getElementById('perfilConsultor').innerHTML = 
+                '<p class="text-red-400">Sessão expirada. Faça login novamente.</p>';
+            return;
+        }
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Erro na API:', response.status, errorText);
+            document.getElementById('perfilConsultor').innerHTML = 
+                `<p class="text-red-400">Erro ao carregar perfil (${response.status})</p>`;
+            return;
+        }
+        
         const data = await response.json();
         
         perfilAtual = data.perfil;
@@ -99,11 +122,10 @@ async function salvarFoto() {
     try {
         const response = await apiRequest(`/api/consultores/${consultorId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ foto_url: fotoUrl })
         });
         
-        if (response.ok) {
+        if (response && response.ok) {
             fecharModalFoto();
             carregarPerfilConsultor();
             alert('Foto atualizada com sucesso!');
@@ -117,6 +139,10 @@ async function salvarFoto() {
 }
 
 async function abrirAtribuirProspeccao() {
+    if (!usuarioLogado || usuarioLogado.tipo !== 'admin') {
+        alert('Apenas administradores podem atribuir prospecções');
+        return;
+    }
     document.getElementById('modalAtribuirProspeccao').classList.remove('hidden');
     await carregarEmpresas('listaEmpresas', 'buscarEmpresa', true);
 }
@@ -126,6 +152,10 @@ function fecharModalAtribuirProspeccao() {
 }
 
 async function abrirAtribuirEmpresas() {
+    if (!usuarioLogado || usuarioLogado.tipo !== 'admin') {
+        alert('Apenas administradores podem atribuir empresas');
+        return;
+    }
     document.getElementById('modalAtribuirEmpresas').classList.remove('hidden');
     await carregarEmpresas('listaEmpresasAtribuir', 'buscarEmpresaAtribuir', false);
 }
@@ -135,6 +165,10 @@ function fecharModalAtribuirEmpresas() {
 }
 
 async function abrirAtribuirAcoes() {
+    if (!usuarioLogado || usuarioLogado.tipo !== 'admin') {
+        alert('Apenas administradores podem definir ações');
+        return;
+    }
     document.getElementById('modalAtribuirAcoes').classList.remove('hidden');
     await carregarEmpresasAtribuidas();
 }
@@ -145,7 +179,11 @@ function fecharModalAtribuirAcoes() {
 
 async function carregarEmpresas(containerId, searchInputId, paraProspeccao) {
     try {
-        const response = await apiRequest('/api/empresas?page=1&page_size=100');
+        const response = await apiRequest('/api/empresas/?page=1&page_size=100');
+        if (!response) {
+            document.getElementById(containerId).innerHTML = '<p class="text-red-400 text-center py-4">Erro de autenticação</p>';
+            return;
+        }
         const data = await response.json();
         empresasDisponiveis = data.items || [];
         
@@ -186,23 +224,34 @@ async function criarProspeccaoParaEmpresa(empresaId) {
 }
 
 async function atribuirEmpresa(empresaId) {
+    if (!usuarioLogado || usuarioLogado.tipo !== 'admin') {
+        alert('Apenas administradores podem atribuir empresas');
+        return;
+    }
+    
     try {
-        const response = await apiRequest('/api/atribuicoes', {
+        const response = await apiRequest('/api/atribuicoes/', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 consultor_id: consultorId,
-                empresa_id: empresaId
+                empresa_id: empresaId,
+                ativa: true
             })
         });
         
-        if (response.ok) {
+        if (response && response.ok) {
             alert('Empresa atribuída com sucesso!');
             fecharModalAtribuirEmpresas();
             carregarPerfilConsultor();
+        } else if (response) {
+            try {
+                const error = await response.json();
+                alert(error.detail || 'Erro ao atribuir empresa');
+            } catch {
+                alert('Erro ao atribuir empresa');
+            }
         } else {
-            const error = await response.json();
-            alert(error.detail || 'Erro ao atribuir empresa');
+            alert('Erro ao atribuir empresa');
         }
     } catch (error) {
         console.error('Erro ao atribuir empresa:', error);
@@ -213,6 +262,10 @@ async function atribuirEmpresa(empresaId) {
 async function carregarEmpresasAtribuidas() {
     try {
         const response = await apiRequest(`/api/atribuicoes/consultor/${consultorId}`);
+        if (!response) {
+            document.getElementById('empresasParaAcoes').innerHTML = '<p class="text-red-400 text-center py-4">Erro de autenticação</p>';
+            return;
+        }
         const atribuicoes = await response.json();
         
         const container = document.getElementById('empresasParaAcoes');
@@ -222,15 +275,17 @@ async function carregarEmpresasAtribuidas() {
             return;
         }
         
-        container.innerHTML = atribuicoes.map(atrib => `
-            <label class="flex items-center p-3 border-b border-gray-700 hover:bg-dark-hover cursor-pointer">
-                <input type="checkbox" value="${atrib.empresa.id}" class="mr-3 w-4 h-4" onchange="toggleEmpresaAcao(this)">
-                <div>
-                    <p class="text-white font-medium">${atrib.empresa.empresa}</p>
-                    <p class="text-gray-400 text-sm">${atrib.empresa.cnpj || 'Sem CNPJ'}</p>
-                </div>
-            </label>
-        `).join('');
+        container.innerHTML = atribuicoes
+            .filter(atrib => atrib.empresa)
+            .map(atrib => `
+                <label class="flex items-center p-3 border-b border-gray-700 hover:bg-dark-hover cursor-pointer">
+                    <input type="checkbox" value="${atrib.empresa.id}" class="mr-3 w-4 h-4" onchange="toggleEmpresaAcao(this)">
+                    <div>
+                        <p class="text-white font-medium">${atrib.empresa.empresa}</p>
+                        <p class="text-gray-400 text-sm">${atrib.empresa.cnpj || 'Sem CNPJ'}</p>
+                    </div>
+                </label>
+            `).join('');
     } catch (error) {
         console.error('Erro ao carregar empresas:', error);
     }
@@ -265,8 +320,56 @@ async function salvarAcoes() {
     empresasSelecionadas = [];
 }
 
-function visualizarEmpresasAtribuidas() {
-    window.location.href = '/empresas';
+async function visualizarEmpresasAtribuidas() {
+    document.getElementById('modalVerEmpresas').classList.remove('hidden');
+    await carregarListaEmpresasAtribuidas();
+}
+
+function fecharModalVerEmpresas() {
+    document.getElementById('modalVerEmpresas').classList.add('hidden');
+}
+
+async function carregarListaEmpresasAtribuidas() {
+    try {
+        const response = await apiRequest(`/api/atribuicoes/consultor/${consultorId}`);
+        if (!response) {
+            document.getElementById('listaEmpresasAtribuidas').innerHTML = '<p class="text-red-400 text-center py-4">Erro de autenticação</p>';
+            return;
+        }
+        const atribuicoes = await response.json();
+        
+        const container = document.getElementById('listaEmpresasAtribuidas');
+        
+        if (!atribuicoes || atribuicoes.length === 0) {
+            container.innerHTML = '<p class="text-gray-400 text-center py-4">Nenhuma empresa atribuída a este consultor</p>';
+            return;
+        }
+        
+        container.innerHTML = atribuicoes
+            .filter(atrib => atrib.empresa)
+            .map(atrib => `
+                <div class="bg-dark-card p-4 rounded-lg hover:bg-dark-hover cursor-pointer transition" onclick="window.location.href='/empresa/${atrib.empresa.id}'">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-white font-medium">${atrib.empresa.empresa || 'Empresa sem nome'}</p>
+                            <p class="text-gray-400 text-sm">${atrib.empresa.cnpj || 'Sem CNPJ'} - ${atrib.empresa.municipio || 'N/A'}, ${atrib.empresa.estado || 'N/A'}</p>
+                        </div>
+                        <div class="text-blue-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        
+        if (container.innerHTML === '') {
+            container.innerHTML = '<p class="text-gray-400 text-center py-4">Nenhuma empresa atribuída a este consultor</p>';
+        }
+    } catch (error) {
+        console.error('Erro ao carregar empresas atribuídas:', error);
+        document.getElementById('listaEmpresasAtribuidas').innerHTML = '<p class="text-red-400 text-center py-4">Erro ao carregar empresas</p>';
+    }
 }
 
 function abrirModalEditarPerfil() {
@@ -311,17 +414,18 @@ async function salvarPerfilCompleto() {
     try {
         const response = await apiRequest('/api/consultores/perfil/atualizar', {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dados)
         });
         
-        if (response.ok) {
+        if (response && response.ok) {
             fecharModalEditarPerfil();
             carregarPerfilConsultor();
             alert('Perfil atualizado com sucesso!');
-        } else {
+        } else if (response) {
             const error = await response.json();
             alert(error.detail || 'Erro ao atualizar perfil');
+        } else {
+            alert('Erro ao atualizar perfil');
         }
     } catch (error) {
         console.error('Erro ao salvar perfil:', error);

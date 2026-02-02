@@ -1,4 +1,4 @@
-modules = ["python-3.12", "nodejs-20", "web"]
+modules = ["python-3.12", "web", "nodejs-20", "bash"]
 [agent]
 expertMode = true
 integrations = ["python_database:1.0.0"]
@@ -24,7 +24,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "uvicorn main:app --host 0.0.0.0 --port 5000"
+args = "uvicorn main:app --host 0.0.0.0 --port 5000 --reload"
 waitForPort = 5000
 
 [[ports]]
@@ -32,8 +32,20 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 37003
+localPort = 34483
+externalPort = 8080
+
+[[ports]]
+localPort = 37553
 externalPort = 3000
+
+[[ports]]
+localPort = 37577
+externalPort = 6000
+
+[[ports]]
+localPort = 37963
+externalPort = 8081
 
 [[ports]]
 localPort = 38313
@@ -48,17 +60,41 @@ localPort = 39899
 externalPort = 3002
 
 [[ports]]
+localPort = 40763
+externalPort = 8099
+
+[[ports]]
 localPort = 41073
 externalPort = 3001
+
+[[ports]]
+localPort = 41809
+externalPort = 8008
 
 [[ports]]
 localPort = 42469
 externalPort = 5173
 
 [[ports]]
+localPort = 42531
+externalPort = 6800
+
+[[ports]]
+localPort = 44065
+externalPort = 8000
+
+[[ports]]
 localPort = 44981
 externalPort = 3003
 
+[[ports]]
+localPort = 46767
+externalPort = 9000
+
 [nix]
 channel = "stable-25_05"
-packages = ["cargo", "freetype", "glibcLocales", "libiconv", "libxcrypt", "rustc"]
+packages = ["cargo", "file", "freetype", "glibcLocales", "libiconv", "libxcrypt", "rustc"]
+
+[userenv]
+
+[userenv.development]
